@@ -1,10 +1,20 @@
-package barqsoft.footballscores.service;
+package barqsoft.footballscores.sync;
 
-import android.app.IntentService;
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.app.PendingIntent;
+import android.content.AbstractThreadedSyncAdapter;
+import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
+import android.content.PeriodicSync;
+import android.content.SyncRequest;
+import android.content.SyncResult;
 import android.net.Uri;
+import android.nfc.Tag;
+import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -19,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.Vector;
 
@@ -26,21 +37,89 @@ import barqsoft.footballscores.DatabaseContract;
 import barqsoft.footballscores.R;
 
 /**
- * Created by yehya khaled on 3/2/2015.
+ * Created by kimsuh on 2/14/16.
  */
-public class myFetchService extends IntentService {
-    public static final String LOG_TAG = "myFetchService";
+public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
+    public static final String LOG_TAG = FootballSyncAdapter.class.getSimpleName();
+    public static final String ACCOUNT = "Football Scores";
+    public static final String ACCOUNT_TYPE = "barqsoft.footballscores";
+    public static final String AUTHORITY = "barqsoft.footballscores";
+    //60 seconds * 180 = 3 hours
+    public static final int SYNC_INTERVAL = 60 * 180;
+    public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
 
-    public myFetchService() {
-        super("myFetchService");
+    public FootballSyncAdapter(Context context, boolean autoInitialize) {
+        super(context, autoInitialize);
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
-        getData("n2");
+    public void onPerformSync(Account account, Bundle extras, String authority,
+                              ContentProviderClient provider, SyncResult syncResult) {
+        Log.d(LOG_TAG, "onPerformSync called");
+        //code to do in background
+        getData("n2x");
         getData("p2");
+    }
 
-        return;
+    public static void configurePeriodicSync(Context context, int syncInterval, int flexTime) {
+        Account account = getSyncAccount(context);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            //we can enable inexact timers in our periodic sync
+            SyncRequest request = new SyncRequest.Builder()
+                    .syncPeriodic(syncInterval, flexTime)
+                    .setSyncAdapter(account, AUTHORITY)
+                    .setExtras(new Bundle()).build();
+            ContentResolver.requestSync(request);
+        } else {
+            ContentResolver.addPeriodicSync(account, AUTHORITY, new Bundle(), syncInterval);
+        }
+    }
+
+    private static void onAccountCreated(Account newAccount, Context context) {
+        FootballSyncAdapter.configurePeriodicSync(context, SYNC_INTERVAL, SYNC_FLEXTIME);
+        ContentResolver.setSyncAutomatically(newAccount, AUTHORITY, true);
+        syncImmediately(context);
+    }
+
+    public static void initializeSyncAdater(Context context) {
+        getSyncAccount(context);
+    }
+
+    public static void syncImmediately(Context context) {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        ContentResolver.requestSync(getSyncAccount(context), AUTHORITY, bundle);
+    }
+
+    public static Account getSyncAccount(Context context) {
+        AccountManager accountManager = (AccountManager)
+                context.getSystemService(Context.ACCOUNT_SERVICE);
+
+        Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
+
+//        //if the password doesn't exist, the account doesn't exist
+//        if (accountManager.getPassword(newAccount) == null) {
+//            //add the account and account type, no password or data.
+//            onAccountCreated(newAccount, context);
+//            if (!accountManager.addAccountExplicitly(newAccount, "", null)) {
+//
+//            }
+//        }
+
+        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+            Log.d(LOG_TAG, "new account is : " + newAccount.toString());
+            ContentResolver.setIsSyncable(newAccount, AUTHORITY, 1);
+            ContentResolver.setSyncAutomatically(newAccount, AUTHORITY, true);
+            ContentResolver.addPeriodicSync(newAccount, AUTHORITY, Bundle.EMPTY, SYNC_INTERVAL
+            );
+        } else {
+            List<PeriodicSync> periodicSyncs = ContentResolver.getPeriodicSyncs(newAccount, AUTHORITY);
+            for(PeriodicSync periodicSync : periodicSyncs) {
+                Log.d(LOG_TAG, "Periodic Sync info: " + periodicSync.toString());
+            }
+        }
+        return newAccount;
     }
 
     private void getData(String timeFrame) {
@@ -60,7 +139,7 @@ public class myFetchService extends IntentService {
             URL fetch = new URL(fetch_build.toString());
             m_connection = (HttpURLConnection) fetch.openConnection();
             m_connection.setRequestMethod("GET");
-            m_connection.addRequestProperty("X-Auth-Token", getString(R.string.api_key));
+            m_connection.addRequestProperty("X-Auth-Token", getContext().getString(R.string.api_key));
             m_connection.connect();
 
             // Read the input stream into a String
@@ -105,12 +184,12 @@ public class myFetchService extends IntentService {
                 if (matches.length() == 0) {
                     //if there is no data, call the function on dummy data
                     //this is expected behavior during the off season.
-                    processJSONdata(getString(R.string.dummy_data), getApplicationContext(), false);
+                    processJSONdata(getContext().getString(R.string.dummy_data), getContext().getApplicationContext(), false);
                     return;
                 }
 
 
-                processJSONdata(JSON_data, getApplicationContext(), true);
+                processJSONdata(JSON_data, getContext().getApplicationContext(), true);
             } else {
                 //Could not Connect
                 Log.d(LOG_TAG, "Could not connect to server.");
@@ -256,4 +335,3 @@ public class myFetchService extends IntentService {
 
     }
 }
-
