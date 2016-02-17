@@ -47,7 +47,7 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
     //60 seconds * 180 = 3 hours
     public static final int SYNC_INTERVAL = 60 * 180;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
-
+    public static final String ACTION_DATA_UPDATED = "barqsoft.footballscores.action_data_updated";
     public FootballSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
     }

@@ -1,18 +1,27 @@
 package barqsoft.footballscores.widgets;
 
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.widget.RemoteViews;
 
 import barqsoft.footballscores.R;
+import barqsoft.footballscores.sync.FootballSyncAdapter;
 
 /**
  * Created by kimsuh on 2/12/16.
  */
 public class FootballWidgetProvider extends AppWidgetProvider {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+        if (FootballSyncAdapter.ACTION_DATA_UPDATED.equals(intent.getAction())) {
+            context.startService(new Intent(context, FootballWidgetService.class));
+        }
+    }
+
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
@@ -20,9 +29,10 @@ public class FootballWidgetProvider extends AppWidgetProvider {
             RemoteViews views = new RemoteViews(context.getPackageName(),
                     R.layout.widget_list_layout);
 
-            Intent intent = new Intent("what aactivity u wanna open?");
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-            views.setOnClickPendingIntent(R.id.widget_container, pendingIntent);
+            Intent intent = new Intent(context, FootballWidgetService.class);
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+            intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
+            views.setRemoteAdapter(appWidgetId, R.id.widget_list, intent);
             appWidgetManager.updateAppWidget(appWidgetId, views);
         }
     }
