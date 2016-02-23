@@ -2,7 +2,6 @@ package barqsoft.footballscores.sync;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -12,7 +11,6 @@ import android.content.PeriodicSync;
 import android.content.SyncRequest;
 import android.content.SyncResult;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -48,6 +46,7 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_INTERVAL = 60 * 180;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     public static final String ACTION_DATA_UPDATED = "barqsoft.footballscores.action_data_updated";
+
     public FootballSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
     }
@@ -61,31 +60,7 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
         getData("p2");
     }
 
-    public static void configurePeriodicSync(Context context, int syncInterval, int flexTime) {
-        Account account = getSyncAccount(context);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            //we can enable inexact timers in our periodic sync
-            SyncRequest request = new SyncRequest.Builder()
-                    .syncPeriodic(syncInterval, flexTime)
-                    .setSyncAdapter(account, AUTHORITY)
-                    .setExtras(new Bundle()).build();
-            ContentResolver.requestSync(request);
-        } else {
-            ContentResolver.addPeriodicSync(account, AUTHORITY, new Bundle(), syncInterval);
-        }
-    }
-
-    private static void onAccountCreated(Account newAccount, Context context) {
-        FootballSyncAdapter.configurePeriodicSync(context, SYNC_INTERVAL, SYNC_FLEXTIME);
-        ContentResolver.setSyncAutomatically(newAccount, AUTHORITY, true);
-        syncImmediately(context);
-    }
-
-    public static void initializeSyncAdater(Context context) {
-        getSyncAccount(context);
-    }
-
-    public static void syncImmediately(Context context) {
+    public static void initializeSyncAdapter(Context context) {
         Bundle bundle = new Bundle();
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
@@ -98,24 +73,15 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
 
         Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
 
-//        //if the password doesn't exist, the account doesn't exist
-//        if (accountManager.getPassword(newAccount) == null) {
-//            //add the account and account type, no password or data.
-//            onAccountCreated(newAccount, context);
-//            if (!accountManager.addAccountExplicitly(newAccount, "", null)) {
-//
-//            }
-//        }
-
         if (accountManager.addAccountExplicitly(newAccount, null, null)) {
             Log.d(LOG_TAG, "new account is : " + newAccount.toString());
             ContentResolver.setIsSyncable(newAccount, AUTHORITY, 1);
             ContentResolver.setSyncAutomatically(newAccount, AUTHORITY, true);
-            ContentResolver.addPeriodicSync(newAccount, AUTHORITY, Bundle.EMPTY, SYNC_INTERVAL
+            ContentResolver.addPeriodicSync(newAccount, AUTHORITY, new Bundle(), SYNC_INTERVAL
             );
         } else {
             List<PeriodicSync> periodicSyncs = ContentResolver.getPeriodicSyncs(newAccount, AUTHORITY);
-            for(PeriodicSync periodicSync : periodicSyncs) {
+            for (PeriodicSync periodicSync : periodicSyncs) {
                 Log.d(LOG_TAG, "Periodic Sync info: " + periodicSync.toString());
             }
         }

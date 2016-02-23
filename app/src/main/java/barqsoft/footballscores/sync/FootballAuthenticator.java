@@ -12,6 +12,7 @@ import android.os.Bundle;
  * Created by kimsuh on 2/14/16.
  */
 public class FootballAuthenticator extends AbstractAccountAuthenticator {
+
     //authenticating with Football app's background service. Since the app
     //does not need any authentication, it is just the stub code.
     public FootballAuthenticator(Context context) {

@@ -11,6 +11,7 @@ import android.util.Log;
  */
 public class FootballSyncService extends Service {
     private static final String TAG = FootballSyncService.class.getSimpleName();
+
     private static final Object sSyncAdapterLock = new Object();
     private static FootballSyncAdapter sSyncAdapter = null;
 

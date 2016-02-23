@@ -39,6 +39,7 @@
         <provider
             android:name=".ScoresProvider"
             android:authorities="barqsoft.footballscores"
+            android:exported="false"
             android:syncable="true" />
 
         <activity
@@ -49,6 +50,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="barqsoft.footballscores.MainActivity" />
         </activity>
+
         <!--authenticator service-->
         <service android:name=".sync.FootballAuthenticatorService">
             <intent-filter>
@@ -59,14 +61,17 @@
                 android:resource="@xml/authenticator" />
         </service>
 
-        <!--Sync Adapter-->
+        <!--Sync Adapter Service-->
         <service
             android:name=".sync.FootballSyncService"
-            android:exported="true"
-            android:process=":sync">
+            android:process=":sync"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter" />
         </service>
     </application>
 
