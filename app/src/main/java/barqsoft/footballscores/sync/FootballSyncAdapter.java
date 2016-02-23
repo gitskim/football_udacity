@@ -73,18 +73,21 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
 
         Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
 
+        if (ContentResolver.isSyncPending(newAccount, AUTHORITY)  ||
+                ContentResolver.isSyncActive(newAccount, AUTHORITY)) {
+            Log.i("ContentResolver", "SyncPending, canceling");
+            ContentResolver.cancelSync(newAccount, AUTHORITY);
+        }
+
         if (accountManager.addAccountExplicitly(newAccount, null, null)) {
             Log.d(LOG_TAG, "new account is : " + newAccount.toString());
             ContentResolver.setIsSyncable(newAccount, AUTHORITY, 1);
             ContentResolver.setSyncAutomatically(newAccount, AUTHORITY, true);
             ContentResolver.addPeriodicSync(newAccount, AUTHORITY, new Bundle(), SYNC_INTERVAL
             );
-        } else {
-            List<PeriodicSync> periodicSyncs = ContentResolver.getPeriodicSyncs(newAccount, AUTHORITY);
-            for (PeriodicSync periodicSync : periodicSyncs) {
-                Log.d(LOG_TAG, "Periodic Sync info: " + periodicSync.toString());
-            }
         }
+
+
         return newAccount;
     }
 
