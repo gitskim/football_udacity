@@ -17,6 +17,8 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
+
+        <!--app widget provider-->
         <receiver
             android:name=".widgets.FootballWidgetProvider"
             android:label="widget_title">
@@ -25,7 +27,7 @@
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@layout/widget_list_layout" />
+                android:resource="@xml/widget_provider" />
         </receiver>
         <activity
             android:name=".MainActivity"
