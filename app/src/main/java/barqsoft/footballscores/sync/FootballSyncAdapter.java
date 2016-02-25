@@ -161,7 +161,7 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
                 processJSONdata(JSON_data, getContext().getApplicationContext(), true);
             } else {
                 //Could not Connect
-                Log.d(LOG_TAG, "Could not connect to server.");
+                Log.d(LOG_TAG, "Could not connect to server. JSON_data is null");
             }
         } catch (Exception e) {
             Log.e(LOG_TAG, e.getMessage());
