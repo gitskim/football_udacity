@@ -56,7 +56,7 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
                               ContentProviderClient provider, SyncResult syncResult) {
         Log.d(LOG_TAG, "onPerformSync called");
         //code to do in background
-        getData("n2x");
+        getData("n2");
         getData("p2");
     }
 
@@ -132,6 +132,7 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
                 return;
             }
             JSON_data = buffer.toString();
+            Log.d(LOG_TAG, "data received are " + JSON_data);
         } catch (Exception e) {
             Log.e(LOG_TAG, "Exception here" + e.getMessage());
         } finally {

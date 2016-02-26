@@ -14,6 +14,7 @@ import barqsoft.footballscores.sync.FootballSyncAdapter;
  * Created by kimsuh on 2/12/16.
  */
 public class FootballWidgetProvider extends AppWidgetProvider {
+    //onupdate and onrecieve get called on the ui thread, so no long-running tasks
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
@@ -33,7 +34,9 @@ public class FootballWidgetProvider extends AppWidgetProvider {
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
             intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
             views.setRemoteAdapter(appWidgetId, R.id.widget_list, intent);
+            views.setEmptyView(R.id.widget_list, R.id.empty_view);
             appWidgetManager.updateAppWidget(appWidgetId, views);
+            //starts service to do the heavy lifting
         }
     }
 }

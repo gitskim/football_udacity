@@ -1,5 +1,7 @@
 package barqsoft.footballscores.widgets;
 
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
@@ -10,12 +12,23 @@ import android.widget.RemoteViewsService;
 public class FootballWidgetService extends RemoteViewsService {
     private static final String TAG = FootballWidgetService.class.getSimpleName();
 
+    private Context mContext;
+    private ContentResolver mContentResolver;
+    private int mAppWidgetId;
+    private ArrayList<FixtureAndTeam> mFixtureAndTeams;
+
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
         return null;
     }
 
-    public static class FootballWidgetRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
+    public class FootballWidgetRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
+
+        public FootballWidgetRemoteViewsFactory(Context context, Intent intent) {
+            mContext = context;
+            mContentResolver = mContext.getContentResolver();
+            mAppWidgetId = intent
+        }
 
         @Override
         public void onCreate() {
