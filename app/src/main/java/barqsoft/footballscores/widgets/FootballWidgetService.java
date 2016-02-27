@@ -90,13 +90,14 @@ public class FootballWidgetService extends RemoteViewsService {
         public RemoteViews getViewAt(int position) {
             RemoteViews remoteViews = new RemoteViews(mContext.getPackageName(), R.layout.widget_list_item);
 
-            if (cursor.moveToFirst()) {
+            assert cursor != null;
+
+            if (cursor.moveToPosition(position)) {
                 remoteViews.setTextViewText(R.id.home_name, cursor.getString(HOME_COL));
                 remoteViews.setTextViewText(R.id.home_score_textview, cursor.getString(HOME_GOALS_COL));
                 remoteViews.setTextViewText(R.id.away_score_textview, cursor.getString(AWAY_GOALS_COL));
                 remoteViews.setTextViewText(R.id.away_name, cursor.getString(AWAY_COL));
             }
-//            cursor.close();
             return remoteViews;
         }
 
