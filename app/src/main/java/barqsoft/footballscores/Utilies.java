@@ -1,5 +1,11 @@
 package barqsoft.footballscores;
 
+import android.text.format.DateFormat;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  * Created by yehya khaled on 3/3/2015.
  */
@@ -82,5 +88,12 @@ public class Utilies {
             default:
                 return R.drawable.no_icon;
         }
+    }
+
+
+    public static String getDateMillisForQueryFormat() {
+        Date today = Calendar.getInstance().getTime();
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+        return fmt.format(today);
     }
 }

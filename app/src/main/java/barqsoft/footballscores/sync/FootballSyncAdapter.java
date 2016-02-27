@@ -13,6 +13,7 @@ import android.content.SyncResult;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -42,10 +43,17 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final String ACCOUNT = "Football Scores";
     public static final String ACCOUNT_TYPE = "barqsoft.footballscores";
     public static final String AUTHORITY = "barqsoft.footballscores";
-    //60 seconds * 180 = 3 hours
-    public static final int SYNC_INTERVAL = 60 * 180;
+    //60 seconds * 60 = 1 hours
+    public static final int SYNC_INTERVAL = 60 * 60;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     public static final String ACTION_DATA_UPDATED = "barqsoft.footballscores.action_data_updated";
+    private static final String PREF_SETUP_COMPLETE = "setup_complete";
+    static boolean isNewAccountCreated = false;
+
+    // Test the ContentResolver to see if the sync adapter is active or pending.
+    // Set the state of the refresh button accordingly.
+    static boolean syncActive = false;
+    static boolean syncPending = false;
 
     public FootballSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -64,7 +72,10 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
         Bundle bundle = new Bundle();
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        ContentResolver.requestSync(getSyncAccount(context), AUTHORITY, bundle);
+        Account account = getSyncAccount(context);
+        if (isNewAccountCreated) {
+            ContentResolver.requestSync(account, AUTHORITY, bundle);
+        }
     }
 
     public static Account getSyncAccount(Context context) {
@@ -73,20 +84,35 @@ public class FootballSyncAdapter extends AbstractThreadedSyncAdapter {
 
         Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
 
-        if (ContentResolver.isSyncPending(newAccount, AUTHORITY)  ||
-                ContentResolver.isSyncActive(newAccount, AUTHORITY)) {
-            Log.i("ContentResolver", "SyncPending, canceling");
-            ContentResolver.cancelSync(newAccount, AUTHORITY);
-        }
+//        if (ContentResolver.isSyncPending(newAccount, AUTHORITY)  ||
+//                ContentResolver.isSyncActive(newAccount, AUTHORITY)) {
+//            Log.i("ContentResolver", "SyncPending, canceling");
+//            ContentResolver.cancelSync(newAccount, AUTHORITY);
+//        }
+//
+//        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+//            Log.d(LOG_TAG, "new account is : " + newAccount.toString());
+//            ContentResolver.setIsSyncable(newAccount, AUTHORITY, 1);
+//            ContentResolver.setSyncAutomatically(newAccount, AUTHORITY, true);
+//            ContentResolver.addPeriodicSync(newAccount, AUTHORITY, new Bundle(), SYNC_INTERVAL
+//            );
+//        }
 
         if (accountManager.addAccountExplicitly(newAccount, null, null)) {
-            Log.d(LOG_TAG, "new account is : " + newAccount.toString());
+            // Inform the system that this account supports sync
             ContentResolver.setIsSyncable(newAccount, AUTHORITY, 1);
+            // Inform the system that this account is eligible for auto sync when the network is up
             ContentResolver.setSyncAutomatically(newAccount, AUTHORITY, true);
-            ContentResolver.addPeriodicSync(newAccount, AUTHORITY, new Bundle(), SYNC_INTERVAL
-            );
+            // Recommend a schedule for automatic synchronization. The system may modify this based
+            // on other scheduled syncs and network utilization.
+            ContentResolver.addPeriodicSync(
+                    newAccount, AUTHORITY, new Bundle(),SYNC_INTERVAL);
+            isNewAccountCreated = true;
         }
-
+        syncActive = ContentResolver.isSyncActive(
+                newAccount, AUTHORITY);
+        syncPending = ContentResolver.isSyncPending(
+                newAccount, AUTHORITY);
 
         return newAccount;
     }

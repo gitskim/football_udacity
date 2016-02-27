@@ -12,18 +12,33 @@ public class DatabaseContract {
 
     public static final class scores_table implements BaseColumns {
         //Table data
-        public static final String LEAGUE_COL = "league";
+        public static final String MATCH_ID = "match_id";
         public static final String DATE_COL = "date";
         public static final String TIME_COL = "time";
         public static final String HOME_COL = "home";
         public static final String AWAY_COL = "away";
         public static final String HOME_GOALS_COL = "home_goals";
         public static final String AWAY_GOALS_COL = "away_goals";
-        public static final String MATCH_ID = "match_id";
+        public static final String LEAGUE_COL = "league";
         public static final String MATCH_DAY = "match_day";
 
-        //public static Uri SCORES_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH)
-        //.build();
+        //Projection
+        public static final String[] PROJECTION = new String[]{
+                MATCH_ID,
+                DATE_COL,
+                TIME_COL,
+                HOME_COL,
+                AWAY_COL,
+                HOME_GOALS_COL,
+                AWAY_GOALS_COL,
+                LEAGUE_COL,
+                MATCH_DAY,
+        };
+
+        public static Uri SCORES_CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH)
+        .build();
+        public static final Uri TEAMS_URI = DatabaseContract.BASE_CONTENT_URI.buildUpon().appendPath("teams").build();
+        public static final Uri FIXTURES_AND_TEAMS_URI = DatabaseContract.BASE_CONTENT_URI.buildUpon().appendPath("fixtures_teams").build();
 
         //Types
         public static final String CONTENT_TYPE =
