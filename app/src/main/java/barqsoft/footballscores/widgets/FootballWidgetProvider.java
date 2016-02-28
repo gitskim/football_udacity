@@ -2,6 +2,7 @@ package barqsoft.footballscores.widgets;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -18,9 +19,12 @@ public class FootballWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        if (FootballSyncAdapter.ACTION_DATA_UPDATED.equals(intent.getAction())) {
-            context.startService(new Intent(context, FootballWidgetService.class));
-        }
+//        if (FootballSyncAdapter.ACTION_DATA_UPDATED.equals(intent.getAction())) {
+//            context.startService(new Intent(context, FootballWidgetService.class));
+//        }
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, getClass()));
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list);
     }
 
     @Override

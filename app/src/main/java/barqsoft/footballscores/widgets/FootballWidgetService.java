@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Binder;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
@@ -17,6 +18,7 @@ import java.util.Date;
 import barqsoft.footballscores.DatabaseContract;
 import barqsoft.footballscores.FootballGameResult;
 import barqsoft.footballscores.R;
+import barqsoft.footballscores.ScoresAdapter;
 import barqsoft.footballscores.Utilies;
 
 /**
@@ -38,6 +40,7 @@ public class FootballWidgetService extends RemoteViewsService {
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
+        android.os.Debug.waitForDebugger();
         return new FootballWidgetRemoteViewsFactory(getApplicationContext(), intent);
     }
 
@@ -51,38 +54,40 @@ public class FootballWidgetService extends RemoteViewsService {
 
         @Override
         public void onCreate() {
-            //Get matches for today
-
-
+            android.os.Debug.waitForDebugger();
         }
 
         @Override
         public void onDataSetChanged() {
             if (cursor != null) {
                 cursor.close();
+                Log.d(TAG, "cursor is not null in dataset changed");
             }
 
             final long identityToken = Binder.clearCallingIdentity();
             cursor = mContentResolver.query(
                     DatabaseContract.scores_table.buildScoreWithDate(),
                     //TODO: not sure about projection
-                    DatabaseContract.scores_table.PROJECTION,
+                    null,
                     null,
                     new String[]{new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis()))},
-                    DatabaseContract.scores_table.HOME_GOALS_COL + " ASC");
-            Binder.restoreCallingIdentity(identityToken);
+                    null);
+
+            Log.d(TAG, "cursor is : " + cursor.toString());
+            Log.d(TAG, "cursor count is " + cursor.getCount());
+//            Binder.restoreCallingIdentity(identityToken);
         }
 
         @Override
         public void onDestroy() {
             if (cursor != null) {
                 cursor.close();
-                cursor = null;
             }
         }
 
         @Override
         public int getCount() {
+            Log.d(TAG, "getcount of cursor is : " + cursor.getCount());
             return cursor == null ? 0 : cursor.getCount();
         }
 
@@ -93,10 +98,22 @@ public class FootballWidgetService extends RemoteViewsService {
             assert cursor != null;
 
             if (cursor.moveToPosition(position)) {
-                remoteViews.setTextViewText(R.id.home_name, cursor.getString(HOME_COL));
-                remoteViews.setTextViewText(R.id.home_score_textview, cursor.getString(HOME_GOALS_COL));
-                remoteViews.setTextViewText(R.id.away_score_textview, cursor.getString(AWAY_GOALS_COL));
-                remoteViews.setTextViewText(R.id.away_name, cursor.getString(AWAY_COL));
+
+                remoteViews.setTextViewText(R.id.home_name, cursor.getString(ScoresAdapter.COL_HOME));
+
+                if (cursor.getString(ScoresAdapter.COL_HOME_GOALS).equals("-1")) {
+                    remoteViews.setTextViewText(R.id.home_score_textview, "N/A");
+                } else {
+                    remoteViews.setTextViewText(R.id.home_score_textview, cursor.getString(ScoresAdapter.COL_HOME_GOALS));
+                }
+
+                if (cursor.getString(ScoresAdapter.COL_AWAY_GOALS).equals("-1")) {
+                    remoteViews.setTextViewText(R.id.away_score_textview, "");
+                } else {
+                    remoteViews.setTextViewText(R.id.away_score_textview, cursor.getString(ScoresAdapter.COL_AWAY_GOALS));
+                }
+
+                remoteViews.setTextViewText(R.id.away_name, cursor.getString(ScoresAdapter.COL_AWAY));
             }
             return remoteViews;
         }
