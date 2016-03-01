@@ -4,6 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/green13"
+    android:layoutDirection="ltr"
+    android:textAlignment="center"
+    android:textDirection="ltr"
     tools:context=".MainActivity"
     tools:ignore="MergeRootFrame">
 
