@@ -40,7 +40,6 @@ public class FootballWidgetService extends RemoteViewsService {
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
-        android.os.Debug.waitForDebugger();
         return new FootballWidgetRemoteViewsFactory(getApplicationContext(), intent);
     }
 
@@ -54,7 +53,6 @@ public class FootballWidgetService extends RemoteViewsService {
 
         @Override
         public void onCreate() {
-            android.os.Debug.waitForDebugger();
         }
 
         @Override

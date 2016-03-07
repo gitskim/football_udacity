@@ -49,7 +49,6 @@ public class FootballWidgetProvider extends AppWidgetProvider {
             // object above.
             views.setEmptyView(R.id.widget_list, R.id.empty_view);
             appWidgetManager.updateAppWidget(appWidgetId, views);
-            //starts service to do the heavy lifting
         }
     }
 }
